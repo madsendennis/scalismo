@@ -77,7 +77,7 @@ case class TriangleList(triangles: IndexedSeq[TriangleCell]) {
       triangleMap(triangle.ptId2) += t
       triangleMap(triangle.ptId3) += t
     }
-    val data = triangleMap.mapValues(s => s.toSet) // make immutable
+    val data: Map[PointId, Set[TriangleId]] = triangleMap.mapValues(s => s.toSet) // make immutable
     // make available per point id, via fast random access in IndexedSeq, starts at 0
     IndexedSeq.tabulate(pointIds.size) { i => data(pointIds(i)).toIndexedSeq }
   }
@@ -97,7 +97,7 @@ case class TriangleList(triangles: IndexedSeq[TriangleCell]) {
     for (p <- pointIds) {
       pointMap(p) -= p
     }
-    val mapData = pointMap.mapValues(s => s.toSet) // make immutable
+    val mapData: Map[PointId, Set[PointId]] = pointMap.mapValues(s => s.toSet) // make immutable
     // fast random access via PointId, starts at 0, use pointDataIndex(pointId) to access
     IndexedSeq.tabulate(pointIds.size) { i => mapData(pointIds(i)).toIndexedSeq }
   }
@@ -112,8 +112,7 @@ case class TriangleList(triangles: IndexedSeq[TriangleCell]) {
       triangleMap(t) ++= triangles(t.id).pointIds.flatMap(p => adjacentTrianglesForPoint(p))
       triangleMap(t) -= t
     }
-    val mapData = triangleMap.mapValues(s => s.toSet)
-
+    val mapData: Map[TriangleId, Set[TriangleId]] = triangleMap.mapValues(s => s.toSet)
     IndexedSeq.tabulate(triangleIds.size) { i => mapData(triangleIds(i)).toIndexedSeq }
   }
 
