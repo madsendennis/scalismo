@@ -26,7 +26,7 @@ case class TriangleList(triangles: IndexedSeq[TriangleCell]) {
   private val pointIdAsIntRange = extractRange(triangles)
 
   /** list of all PointIds referenced by this triangulation (always a *range*, even if it has holes) */
-  lazy val pointIds: IndexedSeq[PointId] = pointIdAsIntRange.map{PointId}
+  lazy val pointIds: IndexedSeq[PointId] = pointIdAsIntRange.map { PointId }
 
   /***/
   lazy val triangleIds: IndexedSeq[TriangleId] = triangles.indices.map(i => TriangleId(i))
@@ -43,8 +43,10 @@ case class TriangleList(triangles: IndexedSeq[TriangleCell]) {
   /** triangles adjacent to a triangle */
   def adjacentTrianglesForTriangle(triangleId: TriangleId): IndexedSeq[TriangleId] = accessTriangleData(adjacentTrianglesForTriangleData, triangleId)
 
-  /** safe point data accessor: check availability and maps to proper data index (using storage starting with index 0)
-    * returns an empty data list for invalid PointId, this occurs for meshes with more points than referenced in this triangulation */
+  /**
+   * safe point data accessor: check availability and maps to proper data index (using storage starting with index 0)
+   * returns an empty data list for invalid PointId, this occurs for meshes with more points than referenced in this triangulation
+   */
   private def accessPointData[A](data: IndexedSeq[IndexedSeq[A]], pointId: PointId): IndexedSeq[A] = {
     if (pointIdAsIntRange.isDefinedAt(pointId.id))
       data(pointId.id - pointIdAsIntRange.min)
@@ -52,8 +54,10 @@ case class TriangleList(triangles: IndexedSeq[TriangleCell]) {
       IndexedSeq.empty[A]
   }
 
-  /** safe triangle data accessor: check availability
-    * fails for invalid TriangleIds */
+  /**
+   * safe triangle data accessor: check availability
+   * fails for invalid TriangleIds
+   */
   private def accessTriangleData[A](data: IndexedSeq[IndexedSeq[A]], triangleId: TriangleId): IndexedSeq[A] = {
     if (triangles.indices.isDefinedAt(triangleId.id))
       data(triangleId.id)
@@ -114,7 +118,7 @@ case class TriangleList(triangles: IndexedSeq[TriangleCell]) {
   }
 
   /** points connected to a triangle, this information is contained in triangles */
-  private lazy val adjacentPointsForTriangleData: IndexedSeq[IndexedSeq[PointId]] = triangles.map{_.pointIds}
+  private lazy val adjacentPointsForTriangleData: IndexedSeq[IndexedSeq[PointId]] = triangles.map { _.pointIds }
 
   /** extract the range of PointIds referenced by this triangulation (assumes a range) */
   private[this] def extractRange(triangles: IndexedSeq[TriangleCell]): IndexedSeq[Int] = {
