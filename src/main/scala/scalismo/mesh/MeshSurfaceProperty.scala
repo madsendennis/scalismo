@@ -69,13 +69,13 @@ case class SurfacePointProperty[A](triangulation: TriangleList, pointData: Index
 object SurfacePointProperty {
   /** sample a function with values at vertices */
   def apply[A](triangulation: TriangleList, numberOfPoints: Int, pointData: PointId => A)(implicit interpolator: Interpolator[A]): SurfacePointProperty[A] = {
-    val data = for(id <- 0 until numberOfPoints) yield pointData(PointId(id))
+    val data = for (id <- 0 until numberOfPoints) yield pointData(PointId(id))
     new SurfacePointProperty[A](triangulation, data)
   }
 
   /** sample a function with values at vertices for points referenced by triangulation */
   def apply[A](triangulation: TriangleList, pointData: PointId => A)(implicit interpolator: Interpolator[A]): SurfacePointProperty[A] = {
-    SurfacePointProperty(triangulation, triangulation.pointIds.maxBy{_.id}.id + 1, pointData)
+    SurfacePointProperty(triangulation, triangulation.pointIds.maxBy { _.id }.id + 1, pointData)
   }
 
   /** average an arbitrary surface property at each vertex point */
@@ -114,14 +114,14 @@ object SurfacePointProperty {
   }
 
   /**
-    * sample an arbitrary surface property at each point
-    * @param property property to sample
-    * @param reducer reduces multiple values at a single vertex to a single value
-    * @param interpolator interpolator
-    * @return surface property which is backed by the sampled and reduced values at each vertex
-    */
+   * sample an arbitrary surface property at each point
+   * @param property property to sample
+   * @param reducer reduces multiple values at a single vertex to a single value
+   * @param interpolator interpolator
+   * @return surface property which is backed by the sampled and reduced values at each vertex
+   */
   def sampleSurfaceProperty[A](property: MeshSurfaceProperty[A], reducer: IndexedSeq[A] => A)(implicit interpolator: Interpolator[A]): SurfacePointProperty[A] = {
-    sampleSurfaceProperty(property, property.triangulation.pointIds.maxBy{_.id}.id + 1, reducer)
+    sampleSurfaceProperty(property, property.triangulation.pointIds.maxBy { _.id }.id + 1, reducer)
   }
 
 }

@@ -19,16 +19,13 @@ import scalismo.common.PointId
 
 /** express a triangulation, contains only triangle information, no points */
 case class TriangleList(triangles: IndexedSeq[TriangleCell]) {
-
   /** get a specific triangle */
   def triangle(id: TriangleId): TriangleCell = triangles(id.id)
 
-  private val pointIdAsIntRange = extractRange(triangles)
+  /** list of all PointIds referenced by this triangulation (sorted list of referenced PointIds) */
+  lazy val pointIds: IndexedSeq[PointId] = triangles.flatMap(t => t.pointIds).sortBy { _.id }.distinct
 
-  /** list of all PointIds referenced by this triangulation (always a *range*, even if it has holes) */
-  lazy val pointIds: IndexedSeq[PointId] = pointIdAsIntRange.map { PointId }
-
-  /***/
+  /** all triangle ids in this list */
   lazy val triangleIds: IndexedSeq[TriangleId] = triangles.indices.map(i => TriangleId(i))
 
   /** points adjacent to a point */
@@ -47,11 +44,9 @@ case class TriangleList(triangles: IndexedSeq[TriangleCell]) {
    * safe point data accessor: check availability and maps to proper data index (using storage starting with index 0)
    * returns an empty data list for invalid PointId, this occurs for meshes with more points than referenced in this triangulation
    */
-  private def accessPointData[A](data: IndexedSeq[IndexedSeq[A]], pointId: PointId): IndexedSeq[A] = {
-    if (pointIdAsIntRange.isDefinedAt(pointId.id))
-      data(pointId.id - pointIdAsIntRange.min)
-    else
-      IndexedSeq.empty[A]
+  private def accessPointData[A](data: Map[PointId, IndexedSeq[A]], pointId: PointId): IndexedSeq[A] = {
+    val optValue = data.get(pointId)
+    optValue.getOrElse(IndexedSeq.empty[A])
   }
 
   /**
@@ -66,7 +61,7 @@ case class TriangleList(triangles: IndexedSeq[TriangleCell]) {
   }
 
   /** cached data for triangles around a point */
-  private lazy val adjacentTrianglesForPointData: IndexedSeq[IndexedSeq[TriangleId]] = {
+  private lazy val adjacentTrianglesForPointData: Map[PointId, IndexedSeq[TriangleId]] = {
     // list structure
     val emptyMapData = for (p <- pointIds) yield p -> collection.mutable.Set.empty[TriangleId]
     val triangleMap = emptyMapData.toMap
@@ -77,13 +72,11 @@ case class TriangleList(triangles: IndexedSeq[TriangleCell]) {
       triangleMap(triangle.ptId2) += t
       triangleMap(triangle.ptId3) += t
     }
-    val data: Map[PointId, Set[TriangleId]] = triangleMap.mapValues(s => s.toSet) // make immutable
-    // make available per point id, via fast random access in IndexedSeq, starts at 0
-    IndexedSeq.tabulate(pointIds.size) { i => data(pointIds(i)).toIndexedSeq }
+    triangleMap.mapValues(s => s.toIndexedSeq) // make immutable
   }
 
   /** points adjacent to a point: cached data structure */
-  private lazy val adjacentPointsForPointData: IndexedSeq[IndexedSeq[PointId]] = {
+  private lazy val adjacentPointsForPointData: Map[PointId, IndexedSeq[PointId]] = {
     // all co-occurrences in triangle list: all points reachable by a link
     val emptyMapData = for (p <- pointIds) yield p -> collection.mutable.Set.empty[PointId]
     val pointMap = emptyMapData.toMap
@@ -97,9 +90,7 @@ case class TriangleList(triangles: IndexedSeq[TriangleCell]) {
     for (p <- pointIds) {
       pointMap(p) -= p
     }
-    val mapData: Map[PointId, Set[PointId]] = pointMap.mapValues(s => s.toSet) // make immutable
-    // fast random access via PointId, starts at 0, use pointDataIndex(pointId) to access
-    IndexedSeq.tabulate(pointIds.size) { i => mapData(pointIds(i)).toIndexedSeq }
+    pointMap.mapValues(s => s.toIndexedSeq) // make immutable
   }
 
   /** triangles connected to triangle via common point */
@@ -118,17 +109,6 @@ case class TriangleList(triangles: IndexedSeq[TriangleCell]) {
 
   /** points connected to a triangle, this information is contained in triangles */
   private lazy val adjacentPointsForTriangleData: IndexedSeq[IndexedSeq[PointId]] = triangles.map { _.pointIds }
-
-  /** extract the range of PointIds referenced by this triangulation (assumes a range) */
-  private[this] def extractRange(triangles: IndexedSeq[TriangleCell]): IndexedSeq[Int] = {
-    if (triangles.isEmpty) {
-      IndexedSeq.empty[Int]
-    } else {
-      val min = triangles.flatMap(t => t.pointIds).minBy(_.id)
-      val max = triangles.flatMap(t => t.pointIds).maxBy(_.id)
-      min.id to max.id
-    }
-  }
 }
 
 /** Id of a triangle in a TriangleList */
