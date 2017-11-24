@@ -16,7 +16,7 @@ object BuildSettings {
   val buildScalaVersion = "2.11.8"
 
 
-  val buildSettings = Defaults.defaultSettings ++ Seq(
+  val buildSettings = Seq(
     organization := buildOrganization,
     scalaVersion := buildScalaVersion,
     crossScalaVersions := Seq("2.11.8", "2.12.1"),
