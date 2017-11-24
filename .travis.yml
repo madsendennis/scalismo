@@ -2,7 +2,7 @@ language: scala
 
 env:
  - SCALISMO_PLATFORM=linux64
- - SBT_OPTS -Xmx3g
+ - SBT_OPTS=-Xmx3g
  - CODACY_PROJECT_TOKEN=cd9ecd4beadd426c8496ec425db32570
 
 ## Caching seems to cause problems of its own, so we leave it commented for now.
