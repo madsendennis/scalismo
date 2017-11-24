@@ -8,11 +8,11 @@ env:
 ## Caching seems to cause problems of its own, so we leave it commented for now.
 ## We use travis_wait instead (see below in the script: section) to give the build more time.
 #cache:
-#  directories:
+directories:
   - $HOME/.ivy2
   - $HOME/.sbt
 
-#before_cache:
+before_cache:
   - rm -f $HOME/.ivy2/.*.lock $HOME/.ivy2/*.lock
 
 scala:
