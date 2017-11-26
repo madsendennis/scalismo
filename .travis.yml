@@ -3,7 +3,6 @@ language: scala
 env:
   global:
     - SCALISMO_PLATFORM=linux64
-    - SBT_OPTS=-Xmx4g
     - CODACY_PROJECT_TOKEN=cd9ecd4beadd426c8496ec425db32570
 
 ## Caching seems to cause problems of its own, so we leave it commented for now.
@@ -23,7 +22,7 @@ script:
   - jdk_switcher use oraclejdk8
   - sbt ++$TRAVIS_SCALA_VERSION update
   - sbt ++$TRAVIS_SCALA_VERSION -Djava.awt.headless=true compile 
-  - sbt ++$TRAVIS_SCALA_VERSION -Djava.awt.headless=true coverage test
+  - sbt ++$TRAVIS_SCALA_VERSION  -Djava.awt.headless=true -J-Xmx4000M coverage test
   - sbt scalariformFormat && git diff --exit-code   # fails build if scalariform results in changes to the code
 
 after_success:
